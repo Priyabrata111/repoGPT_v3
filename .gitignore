@@ -1,3 +1,6 @@
 chroma_db/
 venv/
 .env
+bm25_bundle.pkl
+bm25.pkl
+reranker_model/
