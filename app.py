@@ -2,6 +2,8 @@
 import os
 import re
 import pickle
+import hashlib
+import numpy as np
 
 import gradio as gr
 
@@ -76,12 +78,17 @@ llm = ChatGoogleGenerativeAI(
 
 prompt = ChatPromptTemplate.from_template(
 """
-You are a helpful coding assistant answering questions about a codebase.
+You are a code-intelligence assistant.
 
-Use ONLY the context below.
+Answer the question using only the provided code context.
 
-If the answer is not present in the context, say:
-"I don't see that in the code."
+Rules:
+1. Cite supporting code using [S1], [S2], etc.
+2. Do not invent files, functions, classes or behavior.
+3. If the retrieved context is insufficient, say:
+   "I don't see enough evidence in the indexed code."
+4. Explain the execution flow when multiple files are involved.
+5. Keep technical identifiers exactly as written in the code.
 
 Context:
 {context}
@@ -107,71 +114,156 @@ def tokenize(text):
 #         for d in docs
 #     )
 
-def format_context(docs):
+def format_context(results):
+    sections = []
 
-    return "\n\n".join(
-        f"""
-Repository: {d.metadata.get('repo')}
+    for number, (doc, score) in enumerate(results, start=1):
+        metadata = doc.metadata
 
-File: {d.metadata.get('source')}
+        sections.append(
+            f"""
+[S{number}]
+Repository: {metadata.get("repo", "unknown")}
+File: {metadata.get("source", "unknown")}
+Lines: {metadata.get("start_line", "?")}-{metadata.get("end_line", "?")}
+Relevance score: {score:.4f}
 
 Code:
-{d.page_content}
-"""
-        for d in docs
-    )
+{doc.page_content}
+""".strip()
+        )
 
+    return "\n\n---\n\n".join(sections)
 # -------------------
 # Hybrid Search
 # -------------------
 
-def hybrid_search(query, k=12):
+def get_chunk_id(doc):
+    chunk_id = doc.metadata.get("chunk_id")
 
+    if chunk_id:
+        return chunk_id
+
+    raw = (
+        f"{doc.metadata.get('repo', '')}:"
+        f"{doc.metadata.get('source', '')}:"
+        f"{doc.metadata.get('start_line', '')}:"
+        f"{doc.page_content}"
+    )
+
+    return hashlib.sha256(
+        raw.encode("utf-8")
+    ).hexdigest()
+
+
+def hybrid_search(query, fetch_k=20, rrf_constant=60):
     semantic_docs = vectorstore.similarity_search(
         query,
-        k=k
+        k=fetch_k
     )
 
-    bm25_scores = bm25.get_scores(
-        tokenize(query)
-    )
+    bm25_scores = bm25.get_scores(tokenize(query))
 
-    top_idx = sorted(
+    top_indices = sorted(
         range(len(bm25_scores)),
         key=lambda i: bm25_scores[i],
         reverse=True
-    )[:k]
+    )[:fetch_k]
 
     keyword_docs = [
         smart_chunks[i]
-        for i in top_idx
+        for i in top_indices
     ]
 
-    return semantic_docs + keyword_docs
+    fused_scores = {}
+    documents = {}
+
+    for rank, doc in enumerate(semantic_docs, start=1):
+        chunk_id = get_chunk_id(doc)
+
+        fused_scores[chunk_id] = (
+            fused_scores.get(chunk_id, 0.0)
+            + 1.0 / (rrf_constant + rank)
+        )
+
+        documents[chunk_id] = doc
+
+    for rank, doc in enumerate(keyword_docs, start=1):
+        chunk_id = get_chunk_id(doc)
+
+        fused_scores[chunk_id] = (
+            fused_scores.get(chunk_id, 0.0)
+            + 1.0 / (rrf_constant + rank)
+        )
+
+        documents[chunk_id] = doc
+
+    ranked_ids = sorted(
+        fused_scores,
+        key=fused_scores.get,
+        reverse=True
+    )
+
+    return [
+        documents[chunk_id]
+        for chunk_id in ranked_ids
+    ]
 
 # -------------------
 # Reranking
 # -------------------
 
-def search_with_rerank(query, k=4):
+def search_with_rerank(query, k=5, fetch_k=20):
+    candidates = hybrid_search(
+        query,
+        fetch_k=fetch_k
+    )
 
-    candidates = hybrid_search(query)
+    if not candidates:
+        return []
 
     pairs = [
-        (query, doc.page_content)
+        (query, doc.page_content[:6000])
         for doc in candidates
     ]
 
     scores = reranker.predict(pairs)
 
-    ranked = sorted(
-        zip(candidates, scores),
-        key=lambda x: x[1],
+    valid_results = []
+
+    for doc, score in zip(candidates, scores):
+        score = float(score)
+
+        if not np.isnan(score):
+            valid_results.append((doc, score))
+
+    valid_results.sort(
+        key=lambda item: item[1],
         reverse=True
     )
 
-    return [doc for doc, _ in ranked[:k]]
+    return valid_results[:k]
 
+#-----------------------------------
+# Deterministic Source Formatter
+#------------------------------------
+def format_sources(results):
+    lines = ["\n\n### Retrieved sources"]
+
+    for number, (doc, score) in enumerate(results, start=1):
+        metadata = doc.metadata
+
+        repo = metadata.get("repo", "unknown")
+        source = metadata.get("source", "unknown")
+        start = metadata.get("start_line", "?")
+        end = metadata.get("end_line", "?")
+
+        lines.append(
+            f"- [S{number}] `{repo}/{source}` "
+            f"(lines {start}–{end}, score {score:.4f})"
+        )
+
+    return "\n".join(lines)
 
 
 # -------------------
@@ -179,35 +271,23 @@ def search_with_rerank(query, k=4):
 # -------------------
 
 def ask(question):
+    results = search_with_rerank(
+        question,
+        k=5,
+        fetch_k=20
+    )
 
-    docs = search_with_rerank(question)
-
-    print("\n===== RETRIEVED DOCS =====")
-
-    for i, d in enumerate(docs, 1):
-        print(
-            f"{i}. "
-            f"{d.metadata.get('repo')} | "
-            f"{d.metadata.get('source')}"
-        )
-
-    print("==========================\n")
-
-    docs = search_with_rerank(question)
-
-    print("===== CONTEXT =====")
-    print(format_context(docs)[:5000])
-    print("===================")
+    if not results:
+        return "I couldn't retrieve relevant code."
 
     chain = prompt | llm | StrOutputParser()
 
-    return chain.invoke(
-        {
-            "context": format_context(docs),
-            "question": question
-        }
-    )
+    answer = chain.invoke({
+        "context": format_context(results),
+        "question": question,
+    })
 
+    return answer + format_sources(results)
 # -------------------
 # Gradio
 # -------------------
