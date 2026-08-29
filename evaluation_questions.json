@@ -1,0 +1,30 @@
+[
+  {
+    "id": "systemc_001",
+    "question": "How does the initiator connect to the target socket?",
+    "expected_repo": "systemC",
+    "expected_files": ["tlm.cpp", "tlm2.cpp"],
+    "category": "execution_flow"
+  },
+  {
+    "id": "systemc_002",
+    "question": "Where is b_transport implemented?",
+    "expected_repo": "systemC",
+    "expected_files": ["tlm.cpp"],
+    "category": "symbol_location"
+  },
+  {
+    "id": "simon_001",
+    "question": "Where is the game-over condition implemented?",
+    "expected_repo": "Simon-Game",
+    "expected_files": ["game.js"],
+    "category": "implementation_location"
+  },
+  {
+    "id": "ecommerce_001",
+    "question": "How are JWT tokens generated and validated?",
+    "expected_repo": "Ecommerce-App",
+    "expected_files": ["auth.js"],
+    "category": "execution_flow"
+  }
+]
