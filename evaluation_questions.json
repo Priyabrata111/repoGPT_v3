@@ -1,30 +1,242 @@
 [
   {
-    "id": "systemc_001",
-    "question": "How does the initiator connect to the target socket?",
-    "expected_repo": "systemC",
-    "expected_files": ["tlm.cpp", "tlm2.cpp"],
-    "category": "execution_flow"
-  },
-  {
-    "id": "systemc_002",
-    "question": "Where is b_transport implemented?",
-    "expected_repo": "systemC",
-    "expected_files": ["tlm.cpp"],
+    "id": "simon_001",
+    "question": "Where is the player's clicked color compared with the generated Simon game sequence?",
+    "expected_repo": "Simon-Game-Chellange",
+    "expected_files": ["game.js"],
+    "expected_symbols": ["checkAnswer"],
     "category": "symbol_location"
   },
   {
-    "id": "simon_001",
-    "question": "Where is the game-over condition implemented?",
-    "expected_repo": "Simon-Game",
+    "id": "simon_002",
+    "question": "How does the game generate and append the next random color to the sequence?",
+    "expected_repo": "Simon-Game-Chellange",
     "expected_files": ["game.js"],
-    "category": "implementation_location"
+    "expected_symbols": ["nextSequence", "buttonColors", "gamePattern"],
+    "category": "implementation"
+  },
+  {
+    "id": "simon_003",
+    "question": "What happens when the player clicks the wrong Simon button?",
+    "expected_repo": "Simon-Game-Chellange",
+    "expected_files": ["game.js"],
+    "expected_symbols": ["wrong", "startOver"],
+    "category": "execution_flow"
+  },
+  {
+    "id": "simon_004",
+    "question": "How is a pressed button visually animated and then restored?",
+    "expected_repo": "Simon-Game-Chellange",
+    "expected_files": ["game.js", "styles.css"],
+    "expected_symbols": ["animatePress", "pressed"],
+    "category": "cross_file_behavior"
+  },
+  {
+    "id": "simon_005",
+    "question": "How does a keypress start the Simon game only when it is not already running?",
+    "expected_repo": "Simon-Game-Chellange",
+    "expected_files": ["game.js"],
+    "expected_symbols": ["started", "nextSequence"],
+    "category": "state_management"
+  },
+  {
+    "id": "simon_006",
+    "question": "Which HTML elements and JavaScript handlers connect the four colored buttons to user input?",
+    "expected_repo": "Simon-Game-Chellange",
+    "expected_files": ["index.html", "game.js"],
+    "expected_symbols": ["btn", "userClickedPattern"],
+    "category": "cross_file_behavior"
+  },
+  {
+    "id": "systemc_001",
+    "question": "Where is b_transport registered with the target socket in the basic blocking TLM example?",
+    "expected_repo": "systemC",
+    "expected_files": ["UST/Basics/tlm.cpp"],
+    "expected_symbols": ["Target", "b_transport", "register_b_transport"],
+    "category": "symbol_location"
+  },
+  {
+    "id": "systemc_002",
+    "question": "How are BEGIN_REQ, END_REQ, BEGIN_RESP, and END_RESP handled in the non-blocking TLM example?",
+    "expected_repo": "systemC",
+    "expected_files": ["UST/Basics/AT_tlm.cpp"],
+    "expected_symbols": ["nb_transport_fw", "nb_transport_bw"],
+    "category": "execution_flow"
+  },
+  {
+    "id": "systemc_003",
+    "question": "How are the initiator and memory target sockets bound in the approximately-timed TLM simulation?",
+    "expected_repo": "systemC",
+    "expected_files": ["UST/Basics/AT_tlm.cpp"],
+    "expected_symbols": ["sc_main", "bind"],
+    "category": "wiring"
+  },
+  {
+    "id": "systemc_004",
+    "question": "How does the master wait for an acknowledgement from the slave in the request-acknowledge handshake example?",
+    "expected_repo": "systemC",
+    "expected_files": ["UST/Basics/handShake.cpp"],
+    "expected_symbols": ["master", "slave", "ack", "req"],
+    "category": "synchronization"
+  },
+  {
+    "id": "systemc_005",
+    "question": "How is an interrupt generated every 1000 nanoseconds using an SC_THREAD?",
+    "expected_repo": "systemC",
+    "expected_files": ["UST/Basics/interrupts_thread.cpp"],
+    "expected_symbols": ["Interrupt", "call_interrupt"],
+    "category": "timing_behavior"
+  },
+  {
+    "id": "systemc_006",
+    "question": "Where is the CPU connected to the target in the loosely-timed vConnect example, and where is the transaction handled?",
+    "expected_repo": "systemC",
+    "expected_files": ["vConnect/TLM/mainLT.cpp", "vConnect/TLM/LT.h"],
+    "expected_symbols": ["Initator", "Target", "b_transport"],
+    "category": "cross_file_execution_flow"
+  },
+  {
+    "id": "inotebook_001",
+    "question": "How is a new iNotebook user validated, password-hashed, stored, and issued a JWT?",
+    "expected_repo": "inotebook",
+    "expected_files": ["backend/routes/auth.js", "backend/models/User.js"],
+    "expected_symbols": ["createuser", "bcrypt.hash", "jwt.sign"],
+    "category": "cross_file_execution_flow"
+  },
+  {
+    "id": "inotebook_002",
+    "question": "How does the fetchuser middleware extract and verify the authentication token?",
+    "expected_repo": "inotebook",
+    "expected_files": ["backend/middlewares/fetchuser.js"],
+    "expected_symbols": ["fetchuser", "jwt.verify"],
+    "category": "authentication"
+  },
+  {
+    "id": "inotebook_003",
+    "question": "How does the backend ensure that a user can update only a note that belongs to them?",
+    "expected_repo": "inotebook",
+    "expected_files": ["backend/routes/notes.js"],
+    "expected_symbols": ["updatenote", "findById", "findByIdAndUpdate"],
+    "category": "authorization"
+  },
+  {
+    "id": "inotebook_004",
+    "question": "Trace the add-note flow from the React context API request to MongoDB persistence.",
+    "expected_repo": "inotebook",
+    "expected_files": ["src/context/notes/NoteState.js", "backend/routes/notes.js", "backend/models/Note.js"],
+    "expected_symbols": ["addNote", "addnote", "Note"],
+    "category": "cross_file_execution_flow"
+  },
+  {
+    "id": "inotebook_005",
+    "question": "How is a deleted note removed from both the backend database and the frontend React state?",
+    "expected_repo": "inotebook",
+    "expected_files": ["backend/routes/notes.js", "src/context/notes/NoteState.js"],
+    "expected_symbols": ["deletenote", "deleteNote", "findByIdAndDelete"],
+    "category": "cross_file_state_change"
+  },
+  {
+    "id": "inotebook_006",
+    "question": "Where are the authentication and notes API routers mounted on the Express server?",
+    "expected_repo": "inotebook",
+    "expected_files": ["backend/index.js"],
+    "expected_symbols": ["app.use", "auth", "notes"],
+    "category": "configuration"
   },
   {
     "id": "ecommerce_001",
-    "question": "How are JWT tokens generated and validated?",
+    "question": "How does the Ecommerce application validate credentials and generate a JWT during login?",
     "expected_repo": "Ecommerce-App",
-    "expected_files": ["auth.js"],
-    "category": "execution_flow"
+    "expected_files": ["controllers/authController.js", "helpers/authHelper.js", "routes/authRoute.js"],
+    "expected_symbols": ["loginController", "comparePassword", "JWT.sign"],
+    "category": "cross_file_execution_flow"
+  },
+  {
+    "id": "ecommerce_002",
+    "question": "How do requireSignIn and isAdmin protect an administrator-only route?",
+    "expected_repo": "Ecommerce-App",
+    "expected_files": ["middlewares/authMiddleware.js", "routes/authRoute.js"],
+    "expected_symbols": ["requireSignIn", "isAdmin"],
+    "category": "authorization"
+  },
+  {
+    "id": "ecommerce_003",
+    "question": "How are product filters built from selected categories and price ranges?",
+    "expected_repo": "Ecommerce-App",
+    "expected_files": ["controllers/productController.js", "routes/productRoutes.js"],
+    "expected_symbols": ["productFiltersController"],
+    "category": "implementation"
+  },
+  {
+    "id": "ecommerce_004",
+    "question": "Trace a Braintree payment request from its protected API route through transaction creation and order storage.",
+    "expected_repo": "Ecommerce-App",
+    "expected_files": ["routes/productRoutes.js", "controllers/productController.js", "models/orderModel.js"],
+    "expected_symbols": ["brainTreePaymentController", "gateway.transaction.sale", "orderModel"],
+    "category": "cross_file_execution_flow"
+  },
+  {
+    "id": "ecommerce_005",
+    "question": "How does the server connect middleware, API routers, the React production build, and the fallback index page?",
+    "expected_repo": "Ecommerce-App",
+    "expected_files": ["server.js"],
+    "expected_symbols": ["app.use", "express.static", "sendFile"],
+    "category": "configuration"
+  },
+  {
+    "id": "ecommerce_006",
+    "question": "Where is a product photo stored in the schema and streamed back by the product photo endpoint?",
+    "expected_repo": "Ecommerce-App",
+    "expected_files": ["models/productModel.js", "controllers/productController.js", "routes/productRoutes.js"],
+    "expected_symbols": ["photo", "productPhotoController"],
+    "category": "cross_file_data_flow"
+  },
+  {
+    "id": "genai_001",
+    "question": "How is the BGE-M3 sentence-transformer model used with FAISS for semantic similarity search?",
+    "expected_repo": "GenAI_Learning",
+    "expected_files": ["Embeddings/Embeddings.ipynb"],
+    "expected_symbols": ["SentenceTransformer", "BAAI/bge-m3", "faiss"],
+    "category": "implementation"
+  },
+  {
+    "id": "genai_002",
+    "question": "Which Hugging Face pipelines demonstrate sentiment analysis, text generation, question answering, and summarization?",
+    "expected_repo": "GenAI_Learning",
+    "expected_files": ["Hugging Face/Hugging_Face_Basics.ipynb"],
+    "expected_symbols": ["pipeline", "sentiment-analysis", "text-generation", "question-answering", "summarization"],
+    "category": "notebook_workflow"
+  },
+  {
+    "id": "genai_003",
+    "question": "How does the RAG notebook compare character, recursive-character, semantic, and LLM-based chunking before creating ChromaDB?",
+    "expected_repo": "GenAI_Learning",
+    "expected_files": ["RAG/RAG.ipynb"],
+    "expected_symbols": ["CharacterTextSplitter", "RecursiveCharacterTextSplitter", "SemanticChunker", "Chroma"],
+    "category": "notebook_workflow"
+  },
+  {
+    "id": "genai_004",
+    "question": "How is a calculator tool defined, bound to ChatGroq, executed, and returned to the model as a ToolMessage?",
+    "expected_repo": "GenAI_Learning",
+    "expected_files": ["Agentic_AI/Agent1.ipynb"],
+    "expected_symbols": ["calculator", "bind_tools", "ToolMessage"],
+    "category": "agent_execution_flow"
+  },
+  {
+    "id": "genai_005",
+    "question": "How is the IMDB review classifier built from embedding, bidirectional LSTM, and sigmoid output layers?",
+    "expected_repo": "GenAI_Learning",
+    "expected_files": ["RNN/RNN_Review_Classification.ipynb"],
+    "expected_symbols": ["Embedding", "Bidirectional", "LSTM", "Dense"],
+    "category": "model_architecture"
+  },
+  {
+    "id": "genai_006",
+    "question": "Where is the Pydantic User model instantiated and then exposed through the FastAPI user endpoint?",
+    "expected_repo": "GenAI_Learning",
+    "expected_files": ["FlaskAPIs/myModel.py", "FlaskAPIs/myFast.py"],
+    "expected_symbols": ["User", "u", "create_user"],
+    "category": "cross_file_data_flow"
   }
 ]
