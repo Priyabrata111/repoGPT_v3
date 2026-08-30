@@ -292,22 +292,40 @@ def ask(question):
 # Gradio
 # -------------------
 
+import gradio as gr
 def gradio_respond(message, history):
-    return ask(message)
+    if not message or not message.strip():
+        return "Please enter a question about the indexed repositories."
+
+    try:
+        return ask(message.strip())
+
+    except Exception as error:
+        print(f"Query failed: {error}")
+        return (
+            "An error occurred while processing your question. "
+            "Please try again."
+        )
+
 
 demo = gr.ChatInterface(
     fn=gradio_respond,
     title="Multi-Repository Code Intelligence Assistant",
-    description="Query multiple repositories using semantic search, BM25 retrieval, and cross-encoder reranking.",
+    description=(
+        "Query multiple repositories using semantic search, "
+        "BM25 retrieval, Reciprocal Rank Fusion, and "
+        "cross-encoder reranking."
+    ),
     examples=[
         "How is the JWT token validated?",
         "How is b_transport implemented?",
-        "Which file contains the implementation of nb_transport_fw()",
-        "How are JWT tokens generated and validated in ecommerce app?",
-        "Where is the game-over condition implemented in the Simon Game?"
-    ]
+        "Which file contains the implementation of nb_transport_fw()?",
+        "How are JWT tokens generated and validated in the Ecommerce App?",
+        "Where is the game-over condition implemented in the Simon Game?",
+    ],
 )
 
-demo.launch()
 
+if __name__ == "__main__":
+    demo.queue().launch()
 ## This version is working perfectly
